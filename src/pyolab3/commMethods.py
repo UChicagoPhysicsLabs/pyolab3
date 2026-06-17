@@ -104,9 +104,17 @@ def parse_packet(packet,validate = True):
     lenp = packet[2]
     payload = packet[3:-1]
     if (validate == True) and not(len(payload) == lenp):
-        raise ValueError("payload ({}) should be {} bytes but got {}".format(packet.hex(),lenp,len(payload)))
+        raise ValueError("payload ({}) should be {} bytes but got {}".format(p2h(packet),lenp,len(payload)))
     return payload
 
+def parse_dongle_status(status):
+    '''splits the response packet into its constituent parts '''
+    if not(len(status) == 6):
+        raise ValueError("expect 6 byte packet but got {}".format(len(status)))
+    fw = int.from_bytes(status[0:2],byteorder='big')
+    mode = status[2]
+    id = status[3:].hex()
+    return fw,mode,id
 
 #=======================================================================
 # This next bunch of routines sends commands to the IOLab remote via
