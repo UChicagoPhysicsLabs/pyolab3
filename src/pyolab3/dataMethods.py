@@ -20,42 +20,35 @@ from the IOLab system.
 
 """
 
-#=================================
-# returns the n'th record received
-#
 def getAllRec(n):
+    '''returns the n'th record received'''
     if n < len(G.allRecList):
         return G.recDict[G.allRecList[n][0]][G.allRecList[n][1]]
     else:
         return []
 
-#=========================================
-# returns the n'th data record received
-#
 def getDataRec(n):
+    '''returns the n'th data record received'''
     if n < len(G.dataRecList):
         return G.recDict[G.dataRecList[n][0]][G.dataRecList[n][1]]
     else:
         return []
 
-#=========================================
-# returns the n'th command record received
-#
 def getCommRec(n):
+    '''returns the n'th command record received'''
     if n < len(G.commRecList):
         return G.recDict[G.commRecList[n][0]][G.commRecList[n][1]]
     else:
         return []
 
 
-#===========================================================================================
-# This method spins through the raw data array and finds the actual data packet records received 
-# from the remote. These are described in detail in the Indesign USB Interface Specification 
-# document that can be found at at Documentation/IOLab_usb_interface_specs.pdf)
-# 
-# The records are put into dictionary recDict (see pyolabGlobals.py)
-#
 def findRecords():
+    '''
+    This method spins through the raw data array and finds the actual data packet records received 
+    from the remote. These are described in detail in the Indesign USB Interface Specification 
+    document that can be found at at Documentation/IOLab_usb_interface_specs.pdf)
+    The records are put into dictionary recDict (see pyolabGlobals.py)
+    '''
 
     i = G.nextData         # where we will start looking
     iLast = len(G.dataList) # where we will stop looking
@@ -112,11 +105,11 @@ def findRecords():
             i += 1
 
 
-#=================================================================
-# This method looks for changes to the fixed configuration of the 
-# IOLab remote (for now just assumes you are using one remote)
-#
 def findLastConfig():
+    '''
+    This method looks for changes to the fixed configuration of the
+    IOLab remote (for now just assumes you are using one remote)
+    '''
 
     # look for fixed config information
     if len(G.recDict[G.recType_getFixedConfig]) > 0:
@@ -154,12 +147,11 @@ def findLastConfig():
             G.logFile.write("\nNew packet configuration " + str(pc))
             G.logFile.write("\nNew sensor configuration " + str(sc))
 
-#===================================================================
-# Extracts the payload data from dataFromRemote records and calls 
-# extractSensorData() to extract raw sensor data from these 
-#
 def decodeDataPayloads():
-
+    '''
+    Extracts the payload data from dataFromRemote records and calls 
+    extractSensorData() to extract raw sensor data from these 
+    '''
     # we can only do this if we know what sensors to expect
     if len(G.lastSensorBytes) == 0:
         if G.logData:
@@ -238,19 +230,19 @@ def decodeDataPayloads():
 
 
 
-#======================================================================
-# Extracts the raw (uncalibrated) data from individual sensor sub-payloads. 
-# For details see 
-#
-# Inputs:
-#   sensor      the number of the sensor we are decoding as per sensorName()
-#   data        the data payload we are decoding
-#
-# Output:
-#   The information is placed in a global dictionary G.uncalDataDict
-#   (see pyolabGlobals.py)
-#
 def extractSensorData(sensor,data):
+    '''
+    Extracts the raw (uncalibrated) data from individual sensor sub-payloads. 
+    For details see 
+
+    Inputs:
+        sensor      the number of the sensor we are decoding as per sensorName()
+        data        the data payload we are decoding
+    
+    Output:  
+        The information is placed in a global dictionary G.uncalDataDict  
+        (see pyolabGlobals.py)
+    '''
 
     # The different code segments below deal with data from different sensors. 
     # Only sensors marked with '*' in the list below are extracted so far

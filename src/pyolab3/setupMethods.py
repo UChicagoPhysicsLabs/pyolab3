@@ -22,10 +22,11 @@ threads to fetch and analyze data, and calling code to analyze these data.
 
 """
 
-#=================================================
-# setup some useful lists and inverse dictionaries that are 
-# defined but not initialized in pyolabGlobals.py
 def setupGlobalVariables():
+    '''
+    setup some useful lists and inverse dictionaries that are 
+    defined but not initialized in pyolabGlobals.py
+    '''
 
     # set up list of valid record types
     G.recTypeList = list(G.recTypeDict.keys())
@@ -47,12 +48,12 @@ def setupGlobalVariables():
     for sensNum in sensorList:
         G.uncalDataDict[sensNum] = []
 
-#===============================================
-# This starts up the pyolab software framework by:   
-#   1) setting up the serial port that the IOLab Dongle is plugged into
-#   2) launching asynchronous threads to read data and analyze data 
-# 
 def startItUp():
+    '''
+    This starts up the pyolab software framework by:
+        1) setting up the serial port that the IOLab Dongle is plugged into
+        2) launching asynchronous threads to read data and analyze data 
+    '''
 
     # open log file if needed
     if G.logData:
@@ -95,16 +96,15 @@ def startItUp():
             G.logFile.write("\nCan't open the comm port - is there a dongle plugged in?")
         return False
 
-
-#===============================================
-# This shuts down the pyolab software framework by:   
-#   1) signaling the reading and analysis threads to stop
-#   2) pausing until these threads have indeed stopped
-#   3) to be safe, send a signal to the IOLab remote to stop aquiring data. 
-#      (it may not be aquiring data, but it doesnt hurt to make sure)
-#   3) sending a signal to the IOLab remote to power itself down 
-# 
 def shutItDown():
+    '''
+    This shuts down the pyolab software framework by:   
+      1) signaling the reading and analysis threads to stop
+      2) pausing until these threads have indeed stopped
+      3) to be safe, send a signal to the IOLab remote to stop aquiring data. 
+        (it may not be aquiring data, but it doesnt hurt to make sure)
+      4) sending a signal to the IOLab remote to power itself down 
+    '''
 
     #signal that we want to quit
     G.running = False
@@ -123,12 +123,11 @@ def shutItDown():
     stopData(G.serialPort)
     powerDown(G.serialPort,1)
 
-
-#=========================================
-# This will run in a separate thread to read data from the serial port. 
-# It calls readData(), which does the actual work.
-#
 def readDataThread():
+    '''
+    This will run in a separate thread to read data from the serial port.
+    It calls readData(), which does the actual work.
+    '''
 
     if G.logData:
         G.logFile.write("\nIn readDataThread: " + str(G.sleepTimeRead))
@@ -142,13 +141,12 @@ def readDataThread():
     if G.logData:
         G.logFile.write("\nExiting readDataThread")
 
-
-#======================================
-# Called by readDataThread, which means that this method
-# is basically called several times per second to get incoming data from the
-# serial port.
-#
 def readData():
+    '''
+    Called by readDataThread, which means that this method
+    is basically called several times per second to get incoming data from the
+    serial port.
+    '''
 
     # This part loads raw serial data into a list. 
     rawList = []
@@ -173,12 +171,11 @@ def readData():
     # Return the list of bytes
     return dList
 
-
-#=========================================
-# This will run in a separate thread to analyze data
-# It calls analyzeData(), which does the actual work.
-#
 def analyzeDataThread():
+    '''
+    This will run in a separate thread to analyze data
+    It calls analyzeData(), which does the actual work.
+    '''
 
     if G.logData:
         G.logFile.write("\nIn analyzeDataThread: " + str(G.sleepTimeAnal))
@@ -198,12 +195,12 @@ def analyzeDataThread():
     if G.dumpData:
         G.outputFile.close()
 
-#======================================================================
-# It is called by analyzeDataThread several times per second on a timer. 
-# Each time this method is called there may be new data present in dataList
-# since this is filled asynchronously as data packets arrive to the serial port. 
-#
 def analyzeData():
+    '''
+    It is called by analyzeDataThread several times per second on a timer. 
+    Each time this method is called there may be new data present in dataList
+    since this is filled asynchronously as data packets arrive to the serial port. 
+    '''
 
     # for now just print the data to "outputfile". You should do something 
     # more interesting here (like actually analyzing data for example)

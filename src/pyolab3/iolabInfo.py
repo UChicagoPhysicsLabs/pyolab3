@@ -12,12 +12,11 @@ the IOLab hardware & firmware (basically documentation).
 
 """
 
-
-#======================================
-# Provides a way to match sensor number with sensor name
-# if called with sensNum = 'SensorList', returns list of all sensor numbers]
-#
 def sensorName(sensNum):
+    '''
+    Provides a way to match sensor number with sensor name
+    if called with sensNum = 'SensorList', returns list of all sensor numbers]
+    '''
     
     sensorDict = {
         1  : 'Accelerometer',
@@ -46,12 +45,12 @@ def sensorName(sensNum):
     else:
         return ''
 
-#======================================
-# Provides a way to match sensor configuration number with 
-# the configuration name and the details of which sensors 
-# and sample rates this configuration uses
-#
 def configName(configNum):
+    '''
+    Provides a way to match sensor configuration number with 
+    the configuration name and the details of which sensors 
+    and sample rates this configuration uses
+    '''
         
     configDict = {
      1:['Gyroscope',1,

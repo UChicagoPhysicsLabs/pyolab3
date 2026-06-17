@@ -6,14 +6,14 @@
 # (https://opensource.org/licenses/BSD-3-Clause)
 #
 
-"""
-Global variables used by the pyolab library.
-These expose data acquired by the system, as well as control 
-parameters for the system and for this analysis code. 
 
-"""
 
 class G(object):
+    """
+    Global variables used by the pyolab library.
+    These expose data acquired by the system, as well as control 
+    parameters for the system and for this analysis code. 
+    """
 
     # control varialbles
     sleepTimeRead = 0.025 # time to sleep each read loop
