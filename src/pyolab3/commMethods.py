@@ -10,6 +10,7 @@
 import time
 import serial
 import serial.tools.list_ports
+import binascii
 from threading import Thread
 
 # local stuff
@@ -72,6 +73,39 @@ def openIOLabPort(pName):
     serialport.timeout  = 1
     G.port = serialport
     return serialport
+
+def packet_2_hex(packet):
+    '''convenience function, shows bytes as separated hex characters'''
+    return (binascii.b2a_hex(packet," ")).upper()
+
+def p2h(packet):
+    '''shorthand version of packet_2_hex'''
+    return packet_2_hex(packet)
+
+def parse_packet(packet,validate = True):
+    '''
+    parses the payload of a packet in accordance with section 3.0 of the usb interface specs.
+
+    Arguments:
+    ----------
+    packet : bytestring 
+        The packet sent to or from the receiver
+    validate : bool, optional
+        Used to verify that the packet is properly formed according to the interface specifications.
+
+    Returns:
+    --------
+    payload : bytestring
+        The data contained within the packet
+    '''
+    if (validate == True) and not(packet[0] == 0x02 and packet[-1]==0x0A):
+        raise ValueError("malformed packet, incorrect terminating characters. Expected 0x02 and 0x0A, got {} and {}".format(packet[0],packet[-1]))
+    cmd = packet[1]
+    lenp = packet[2]
+    payload = packet[3:-1]
+    if (validate == True) and not(len(payload) == lenp):
+        raise ValueError("payload ({}) should be {} bytes but got {}".format(packet.hex(),lenp,len(payload)))
+    return payload
 
 
 #=======================================================================
