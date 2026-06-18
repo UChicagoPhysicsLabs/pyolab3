@@ -103,18 +103,39 @@ def parse_packet(packet,validate = True):
     cmd = packet[1]
     lenp = packet[2]
     payload = packet[3:-1]
+    if ((validate == True) and len(payload)>50):
+        raise ValueError("payload too long, should be 50 bytes at most but is {}.".format(len(payload)))
     if (validate == True) and not(len(payload) == lenp):
         raise ValueError("payload ({}) should be {} bytes but got {}".format(p2h(packet),lenp,len(payload)))
     return payload
 
 def parse_dongle_status(status):
-    '''splits the response packet into its constituent parts '''
+    '''splits the dongle status response packet into its constituent parts'''
     if not(len(status) == 6):
         raise ValueError("expect 6 byte packet but got {}".format(len(status)))
     fw = int.from_bytes(status[0:2],byteorder='big')
     mode = status[2]
-    id = status[3:].hex()
+    id = p2h(status[3:])
     return fw,mode,id
+
+def return_dongle_status():
+    '''convenience function to get the dongle status with a single command'''
+    getDongleStatus(G.serialPort)
+    packet = parse_packet(G.serialPort.readline())
+    return parse_dongle_status(packet)
+
+def parse_pairing_status(status,validate = True):
+    '''splits the pairing status response packet into its constituent parts'''
+    if ((validate == True) and not(len(status) == 8 or len(status)==13)):
+        raise ValueError("expect 8 or 13 byte packet but got {}".format(len(status)))
+    r1_status = status[0]
+    r1_id = p2h(status[1:4])
+    r2_status = status[4]
+    r2_id = p2h(status[5:8])
+    freq = None
+    if len(status)==13:
+        freq = status[-4:]
+    return (r1_status,r1_id,r2_status,r2_id,freq)
 
 #=======================================================================
 # This next bunch of routines sends commands to the IOLab remote via
