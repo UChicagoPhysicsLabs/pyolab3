@@ -82,7 +82,7 @@ def p2h(packet):
     '''shorthand version of packet_2_hex'''
     return packet2Hex(packet)
 
-def ParsePacket(packet,validate = True):
+def parsePacket(packet,validate = True):
     '''
     parses the payload of a packet in accordance with section 3.0 of the usb interface specs.
 
@@ -133,31 +133,35 @@ def makeCommand(cmd,args=0x00):
         command = bytearray([[0x02,cmd,len(args)]+args+[0x0A]]) 
     return command
         
+def sendCommand(s,cmd_record):
+    '''Sends a packet to the serial bus s'''
+    s.write(cmd_record)
+    time.sleep(G.sleepCommand)
+
 
 def getDongleStatus(s):
     '''Ask the dongle to send a data packet of type 0x14 telling us its status'''
+    sendCommand(s,makeCommand(0x14))
 
-    command = 0x14
-    command_record = [0x02, command, 0x00, 0x0A] 
-    s.write(bytearray(command_record))
-    time.sleep(G.sleepCommand)  #give the serial port some time to receive the data
-
-def ParseDongleStatus(status):
+def parseDongleStatus(status,validate = True):
     '''splits the dongle status response packet into its constituent parts'''
-    if not(len(status) == 6):
+    if (validate == True) and (not(len(status) == 6)):
         raise ValueError("expect 6 byte packet but got {}".format(len(status)))
-    fw = int.from_bytes(status[0:2],byteorder='big')
-    mode = status[2]
-    id = p2h(status[3:])
+    try:
+        fw = int.from_bytes(status[0:2],byteorder='big')
+        mode = status[2]
+        id = p2h(status[3:])
+    except:
+        return status
     return fw,mode,id
 
-def ReturnDongleStatus():
+def returnDongleStatus(validate = True):
     '''convenience function to get the dongle status with a single command'''
     getDongleStatus(G.serialPort)
-    packet = ParsePacket(G.serialPort.readline())
-    return ParseDongleStatus(packet)
+    packet = parsePacket(G.serialPort.readline())
+    return parseDongleStatus(packet,validate)
 
-def ParsePairingStatus(status,validate = True):
+def parsePairingStatus(status,validate = True):
     '''splits the pairing status response packet into its constituent parts'''
     if ((validate == True) and not(len(status) == 8 or len(status)==13)):
         raise ValueError("expect 8 or 13 byte packet but got {}".format(len(status)))
