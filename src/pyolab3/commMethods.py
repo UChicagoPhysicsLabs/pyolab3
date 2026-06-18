@@ -74,15 +74,15 @@ def openIOLabPort(pName):
     G.port = serialport
     return serialport
 
-def packet_2_hex(packet):
+def packet2Hex(packet):
     '''convenience function, shows bytes as separated hex characters'''
     return (binascii.b2a_hex(packet," ")).upper()
 
 def p2h(packet):
     '''shorthand version of packet_2_hex'''
-    return packet_2_hex(packet)
+    return packet2Hex(packet)
 
-def parse_packet(packet,validate = True):
+def ParsePacket(packet,validate = True):
     '''
     parses the payload of a packet in accordance with section 3.0 of the usb interface specs.
 
@@ -109,7 +109,40 @@ def parse_packet(packet,validate = True):
         raise ValueError("payload ({}) should be {} bytes but got {}".format(p2h(packet),lenp,len(payload)))
     return payload
 
-def parse_dongle_status(status):
+def makeCommand(cmd,args=0x00):
+    '''
+    Creates a packet to send a command.  Defauts to no arguments
+
+    Arguments:
+    ----------
+    cmd : int
+        Command to be sent.  See section 4 of the usb interface specs for a list of valid commands.
+    args : 0 or list
+        the list of arguments to be included with the command.  The length should not be included; it will be calculated automatically.
+
+    Returns:
+    --------
+    command : bytearray
+        A (hopefully valid) byte array containing the required start/stop characters
+    
+    '''
+
+    if args == 0x00:
+        command = bytearray([0x02,cmd,0x00,0x0A])
+    else:
+        command = bytearray([[0x02,cmd,len(args)]+args+[0x0A]]) 
+    return command
+        
+
+def getDongleStatus(s):
+    '''Ask the dongle to send a data packet of type 0x14 telling us its status'''
+
+    command = 0x14
+    command_record = [0x02, command, 0x00, 0x0A] 
+    s.write(bytearray(command_record))
+    time.sleep(G.sleepCommand)  #give the serial port some time to receive the data
+
+def ParseDongleStatus(status):
     '''splits the dongle status response packet into its constituent parts'''
     if not(len(status) == 6):
         raise ValueError("expect 6 byte packet but got {}".format(len(status)))
@@ -118,13 +151,13 @@ def parse_dongle_status(status):
     id = p2h(status[3:])
     return fw,mode,id
 
-def return_dongle_status():
+def ReturnDongleStatus():
     '''convenience function to get the dongle status with a single command'''
     getDongleStatus(G.serialPort)
-    packet = parse_packet(G.serialPort.readline())
-    return parse_dongle_status(packet)
+    packet = ParsePacket(G.serialPort.readline())
+    return ParseDongleStatus(packet)
 
-def parse_pairing_status(status,validate = True):
+def ParsePairingStatus(status,validate = True):
     '''splits the pairing status response packet into its constituent parts'''
     if ((validate == True) and not(len(status) == 8 or len(status)==13)):
         raise ValueError("expect 8 or 13 byte packet but got {}".format(len(status)))
@@ -144,13 +177,6 @@ def parse_pairing_status(status,validate = True):
 # (Indesign document number 1814F03 Revision 11, available on the IOLab web page at
 #  http://www.iolab.science/Documents/IOLab_Expert_Docs/IOLab_usb_interface_specs.pdf)
 
-def getDongleStatus(s):
-    '''Ask the dongle to send a data packet of type 0x14 telling us its status'''
-
-    command = 0x14
-    command_record = [0x02, command, 0x00, 0x0A] 
-    s.write(bytearray(command_record))
-    time.sleep(G.sleepCommand)  #give the serial port some time to receive the data
 
 def startData(s):
     '''
